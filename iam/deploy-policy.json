@@ -88,6 +88,18 @@
       "Resource": "arn:aws:iam::490617140655:role/mcp-docker-lambda-*"
     },
     {
+      "Sid": "CDKBootstrapRolePassRole",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": [
+        "arn:aws:iam::490617140655:role/cdk-hnb659fds-cfn-exec-role-490617140655-us-west-2",
+        "arn:aws:iam::490617140655:role/cdk-hnb659fds-deploy-role-490617140655-us-west-2",
+        "arn:aws:iam::490617140655:role/cdk-hnb659fds-file-publishing-role-490617140655-us-west-2",
+        "arn:aws:iam::490617140655:role/cdk-hnb659fds-image-publishing-role-490617140655-us-west-2",
+        "arn:aws:iam::490617140655:role/cdk-hnb659fds-lookup-role-490617140655-us-west-2"
+      ]
+    },
+    {
       "Sid": "CloudWatchLogsManagement",
       "Effect": "Allow",
       "Action": [

@@ -20,18 +20,12 @@ export class McpLambdaStack extends cdk.Stack {
 
     const { config } = props;
 
-    // Create or import ECR repository
-    this.ecrRepository = new ecr.Repository(this, "McpToolRepository", {
-      repositoryName: config.ecrRepositoryName,
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
-      imageScanOnPush: true,
-      lifecycleRules: [
-        {
-          maxImageCount: 10,
-          description: "Keep only the last 10 images",
-        },
-      ],
-    });
+    // Import existing ECR repository (created by push-docker.sh)
+    this.ecrRepository = ecr.Repository.fromRepositoryName(
+      this,
+      "McpToolRepository",
+      config.ecrRepositoryName
+    );
 
     // Create Lambda execution role
     const lambdaRole = new iam.Role(this, "McpLambdaRole", {
