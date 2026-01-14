@@ -24,11 +24,10 @@ docker-compose up --build
 ### Deploy to AWS
 
 1. Fork this repository
-2. Add GitHub Secrets:
-   - `AWS_ACCOUNT_ID`
-   - `AWS_ACCESS_KEY_ID`
-   - `AWS_SECRET_ACCESS_KEY`
-3. Push to `main` branch to trigger deployment
+2. Set up AWS OIDC provider for GitHub Actions (see [CLAUDE.md](CLAUDE.md) for details)
+3. Add GitHub Secret:
+   - `AWS_DEPLOY_ROLE_ARN`: IAM role ARN for GitHub Actions to assume
+4. Push to `main` branch to trigger deployment
 
 ### Manual Deployment
 

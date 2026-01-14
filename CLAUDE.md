@@ -120,12 +120,11 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) follows these patte
 2. **Artifact-Driven**: Docker images and CDK output passed as artifacts
 3. **Synth Once**: CDK templates synthesized once, reused for diff and deploy
 4. **Script-Based**: All logic in `scripts/`, workflow YAML is a thin wrapper
+5. **OIDC Authentication**: Uses AWS IAM role assumption via GitHub OIDC provider (no static credentials)
 
 ### Required GitHub Secrets
 
-- `AWS_ACCOUNT_ID`: AWS account ID
-- `AWS_ACCESS_KEY_ID`: AWS credentials
-- `AWS_SECRET_ACCESS_KEY`: AWS credentials
+- `AWS_DEPLOY_ROLE_ARN`: IAM role ARN for GitHub Actions to assume via OIDC
 
 ### Optional GitHub Variables
 
@@ -133,6 +132,40 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) follows these patte
 - `CDK_AWS_REGION`: AWS region (default: `us-west-2`)
 - `CDK_LAMBDA_MEMORY_MB`: Lambda memory (default: `512`)
 - `CDK_LAMBDA_TIMEOUT_SECONDS`: Lambda timeout (default: `30`)
+
+### Setting up AWS OIDC for GitHub Actions
+
+1. Create an OIDC identity provider in AWS IAM:
+   - Provider URL: `https://token.actions.githubusercontent.com`
+   - Audience: `sts.amazonaws.com`
+
+2. Create an IAM role with trust policy for your GitHub repository:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Principal": {
+           "Federated": "arn:aws:iam::ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
+         },
+         "Action": "sts:AssumeRoleWithWebIdentity",
+         "Condition": {
+           "StringEquals": {
+             "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+           },
+           "StringLike": {
+             "token.actions.githubusercontent.com:sub": "repo:YOUR_ORG/YOUR_REPO:*"
+           }
+         }
+       }
+     ]
+   }
+   ```
+
+3. Attach policies to the role for ECR, Lambda, CloudFormation, IAM, and CloudWatch access.
+
+4. Add the role ARN as `AWS_DEPLOY_ROLE_ARN` secret in GitHub repository settings.
 
 ## Adding New MCP Tools
 
