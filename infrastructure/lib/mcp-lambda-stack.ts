@@ -65,14 +65,21 @@ export class McpLambdaStack extends cdk.Stack {
       }
     );
 
-    // Create Function URL for HTTP access
+    // Create Function URL with IAM authentication (SigV4)
     this.functionUrl = this.lambdaFunction.addFunctionUrl({
-      authType: lambda.FunctionUrlAuthType.NONE,
+      authType: lambda.FunctionUrlAuthType.AWS_IAM,
       cors: {
         allowedOrigins: ["*"],
         allowedMethods: [lambda.HttpMethod.ALL],
         allowedHeaders: ["*"],
       },
+    });
+
+    // Allow any authenticated principal in the same account to invoke the function URL
+    this.lambdaFunction.addPermission("AllowSameAccountInvoke", {
+      principal: new iam.AccountPrincipal(cdk.Stack.of(this).account),
+      action: "lambda:InvokeFunctionUrl",
+      functionUrlAuthType: lambda.FunctionUrlAuthType.AWS_IAM,
     });
 
     // Outputs
