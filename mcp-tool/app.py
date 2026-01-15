@@ -121,14 +121,25 @@ def lambda_handler(event, context):
     """
     AWS Lambda handler function.
     Uses Mangum to adapt the ASGI app for Lambda.
-    Creates a fresh app instance for each invocation to avoid session manager reuse issues.
+
+    Key configuration:
+    - lifespan="on": Required to initialize the StreamableHTTPSessionManager's task group.
+      The MCP SDK requires the session manager's run() context to be active when handling
+      requests. With lifespan="on", Mangum runs startup/shutdown events for each invocation,
+      which properly initializes and cleans up the session manager.
+    - Fresh app instance: Created per invocation because the session manager can only
+      run once per instance.
     """
     from mangum import Mangum
 
     # Create fresh app instance for each Lambda invocation
     # This is required because StreamableHTTPSessionManager can only run once per instance
     app = mcp.streamable_http_app()
-    handler = Mangum(app, lifespan="off")
+
+    # lifespan="on" is required to run the ASGI lifespan startup event, which initializes
+    # the StreamableHTTPSessionManager's internal task group via its run() context manager.
+    # Without this, requests fail with "Task group is not initialized. Make sure to use run()."
+    handler = Mangum(app, lifespan="on")
     return handler(event, context)
 
 
