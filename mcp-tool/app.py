@@ -28,9 +28,9 @@ def _get_current_time_impl(timezone_name: str = "UTC") -> dict:
     """Get the current time in the specified timezone."""
     try:
         tz = ZoneInfo(timezone_name)
-    except Exception:
-        tz = timezone.utc
-        timezone_name = "UTC"
+    except Exception as e:
+        # Raise exception so FastMCP sets isError=true in the response
+        raise ValueError(f"Invalid timezone '{timezone_name}': {e}")
 
     now = datetime.now(tz)
 
@@ -51,15 +51,15 @@ def _get_time_difference_impl(
     """Get the time difference between two timezones."""
     try:
         tz1 = ZoneInfo(timezone1)
-    except Exception:
-        tz1 = timezone.utc
-        timezone1 = "UTC"
+    except Exception as e:
+        # Raise exception so FastMCP sets isError=true in the response
+        raise ValueError(f"Invalid timezone1 '{timezone1}': {e}")
 
     try:
         tz2 = ZoneInfo(timezone2)
-    except Exception:
-        tz2 = timezone.utc
-        timezone2 = "UTC"
+    except Exception as e:
+        # Raise exception so FastMCP sets isError=true in the response
+        raise ValueError(f"Invalid timezone2 '{timezone2}': {e}")
 
     now_utc = datetime.now(timezone.utc)
     time1 = now_utc.astimezone(tz1)
